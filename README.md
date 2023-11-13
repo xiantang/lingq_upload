@@ -39,7 +39,7 @@ status="private"
 
 Command:
 
-```python upload.py```
+```python upload.py -h```
 
 ## Thanks
 [mescyn](https://www.lingq.com/en/learn/fr/web/community/forum/lingq-developer-forum/python-uploading-audio-via-api) - on Lingq Developer Forum
