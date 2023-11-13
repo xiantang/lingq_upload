@@ -35,12 +35,6 @@ postAddress="https://www.lingq.com/api/v2/xx/lessons/"
 
 # Specify private if material is copyrighted or personal
 status="private"
-
-# Manually create a course on Lingq and reference this collection ID
-collectionID="xxxxxx"
-
-# Full path name (created on Mac OSX)
-mypath="/Users/paulywill/Coding/python/lingq_upload/mp3"
 ```
 
 Command:
