@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 
 import argparse
 import os
-import time
 from glob import glob
 from os.path import basename
 
@@ -89,19 +87,6 @@ def upload_cover(cover_path, collectonID):
         headers=h,
     )
     print(r.json())
-
-
-def get_lessons(collectonID):
-    url = (
-        "https://www.lingq.com/api/v3/en/collections/"
-        + str(collectonID)
-        + "/lessons/?page=1&page_size=100&sortBy=pos"
-    )
-    r = requests.get(
-        url,
-        headers=header,
-    )
-    return r.json()
 
 
 def upload_lessons(collectionID):
