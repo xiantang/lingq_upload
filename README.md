@@ -59,4 +59,6 @@ python3 upload.py -a ~/Downloads/Princess_Diana-Cherry_Gilchrist_splitted/ -b ~/
 python3 upload.py -a ~/Downloads/Marley_and_Me-John_Grogan_splitted/ -b ~/Downloads/Marley_and_Me-John_Grogan.epub       --t "Marley and Me"
 python3 upload.py -a ~/Downloads/The_Count_of_Monte_Cristo-Alexandre_Dumas_Audio/ -b ~/Downloads/The_Count_of_Monte_Cristo-Alexandre_Dumas.epub       -t "The Count of Monte Cristo"
 python3 upload.py -a ~/Downloads/The_War_Of_The_Worlds-H_G_Wells_Audio/ -b ~/Downloads/The_War_Of_The_Worlds-H_G_Wells.epub       -t "The War Of The Worlds"
+python3 upload.py -a  ~/Downloads/Dangerous_Game-Harris_William_splitted/ -b /home/neo/Downloads/Dangerous_Game-Harris_William.epub       -t "Dangerous Game"
+python3 upload.py -a  ~/Downloads/The_Ring-Bernard_Smith_splitted/ -b /home/neo/Downloads/The_Ring-Bernard_Smith.mp3       -t "The Ring"
 ```

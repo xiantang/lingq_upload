@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import time
 from glob import glob
 from os.path import basename
 
@@ -140,6 +141,13 @@ def upload_lessons(collectionID):
             data=m,
             headers=h,
         )
+        print("generating timestamp...")
+        r = requests.post(
+            "https://www.lingq.com/api/v3/en/lessons/" + str(lesson_id) + "/genaudio/",
+            json={},
+            headers=h,
+        )
+        print(r.json())
 
 
 collectionID = create_collections(title, discriprtion)
