@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 from ebooklib import epub
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+from generate_timestamp import generate_timestamp_for_course
+
 load_dotenv()
 key = os.getenv("APIKey")
 postAddress = os.getenv("postAddress")
@@ -45,7 +47,8 @@ cover = glob(args.audio_folder + "/*.jpg")
 def chapter_to_str(doc):
     soup = BeautifulSoup(doc.content, "html.parser")
     text = [para.get_text() for para in soup.find_all("p")]
-    return " ".join(text)
+    a = "\r\n\r\n".join(text)
+    return a
 
 
 def create_collections(
@@ -86,7 +89,6 @@ def upload_cover(cover_path, collectonID):
         data=m,
         headers=h,
     )
-    print(r.json())
 
 
 def upload_lessons(collectionID):
@@ -126,13 +128,6 @@ def upload_lessons(collectionID):
             data=m,
             headers=h,
         )
-        print("generating timestamp...")
-        r = requests.post(
-            "https://www.lingq.com/api/v3/en/lessons/" + str(lesson_id) + "/genaudio/",
-            json={},
-            headers=h,
-        )
-        print(r.json())
 
 
 collectionID = create_collections(title, discriprtion)
@@ -140,3 +135,5 @@ if len(cover) > 0:
     upload_cover(cover[0], collectionID)
 
 upload_lessons(collectionID)
+
+generate_timestamp_for_course(collectionID)
