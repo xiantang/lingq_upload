@@ -61,4 +61,7 @@ python3 upload.py -a ~/Downloads/The_Count_of_Monte_Cristo-Alexandre_Dumas_Audio
 python3 upload.py -a ~/Downloads/The_War_Of_The_Worlds-H_G_Wells_Audio/ -b ~/Downloads/The_War_Of_The_Worlds-H_G_Wells.epub       -t "The War Of The Worlds"
 python3 upload.py -a  ~/Downloads/Dangerous_Game-Harris_William_splitted/ -b /home/neo/Downloads/Dangerous_Game-Harris_William.epub       -t "Dangerous Game"
 python3 upload.py -a  ~/Downloads/The_Ring-Bernard_Smith_splitted/ -b /home/neo/Downloads/The_Ring-Bernard_Smith.mp3       -t "The Ring"
+python3 upload.py -a  ~/Downloads/Breakfast/ -b /home/neo/Downloads/Breakfast_at_Tiffanys-Truman_Capote.epub       -t "Breakfast at Tiffany's "
+python3 upload.py -a  ~/Downloads/Strangers_on_a_Train-Patricia_Highsmith_splitted/ -b ~/Downloads/Strangers_on_a_Train-Patricia_Highsmith.epub -t "Strangers on a Train"
 ```
+
