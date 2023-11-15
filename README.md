@@ -63,5 +63,7 @@ python3 upload.py -a  ~/Downloads/Dangerous_Game-Harris_William_splitted/ -b /ho
 python3 upload.py -a  ~/Downloads/The_Ring-Bernard_Smith_splitted/ -b /home/neo/Downloads/The_Ring-Bernard_Smith.mp3       -t "The Ring"
 python3 upload.py -a  ~/Downloads/Breakfast/ -b /home/neo/Downloads/Breakfast_at_Tiffanys-Truman_Capote.epub       -t "Breakfast at Tiffany's "
 python3 upload.py -a  ~/Downloads/Strangers_on_a_Train-Patricia_Highsmith_splitted/ -b ~/Downloads/Strangers_on_a_Train-Patricia_Highsmith.epub -t "Strangers on a Train"
+python3 upload.py -a  ~/Downloads/What_Happened_at_Seacliffe-Denise_Kirby_splitted/ -b ~/Downloads/What_Happened_at_Seacliffe-Denise_Kirby.epub  -t "What Happened at Seacliffe"
+python3 upload.py -a  ~/Downloads/The_Murder_at_the_Vicarage-Agatha_Christie_splitted/ -b ~/Downloads/The_Murder_at_the_Vicarage-Agatha_Christie.epub  -t "The Murder at the Vicarage"
 ```
 
