@@ -1,4 +1,8 @@
 # configs
 __pycache__/*
 /mp3
+*/*.mp3
+*/*.zip
+*/*.epub
+*/*.cue
 .env

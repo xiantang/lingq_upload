@@ -1,0 +1,17 @@
+#!/bin/bash
+
+books=($(curl -s https://english-e-reader.net/level/pre-intermediate | grep "/book/.*>" | sed 's/<a.*="//' | sed 's/">//'))
+
+# | xargs -n 1 curl -s | grep --line-buffered -E "^words: "
+for book in "${books[@]}"; do
+	output=$(curl -s "https://english-e-reader.net$book")
+	words=$(grep --line-buffered -E "^words: " <<<$output | awk '{print $2}')
+	bookname=$(echo $book | sed 's|/book/||')
+	echo "$words $bookname"
+	mkdir "$bookname"
+	wget -q "https://english-e-reader.net/download?link=$bookname&format=epub" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.epub"
+	wget -q "https://english-e-reader.net/download?link=$bookname&format=mp3" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.mp3"
+	wget -q "https://english-e-reader.net/download?link=$bookname&format=cue" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.cue"
+	wget -q "https://english-e-reader.net/download?link=$bookname&format=mp3zip" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.zip"
+	# /download?link=body-on-the-rocks-denise-kirby&format=
+done
