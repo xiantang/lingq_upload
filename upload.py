@@ -40,9 +40,18 @@ title = args.title
 discriprtion = """
 """
 
-book = epub.read_epub(args.book_path)
 
-cover = glob(args.audio_folder + "/*.jpg")
+if args.folder:
+    book = glob(args.folder + "/*.epub")
+    book = epub.read_epub(book[0])
+    cover = glob(args.folder + "/*.jpg")
+    listofmp3s = glob(args.folder + "/*.mp3", recursive=True)
+    listofmp3s.sort()
+    title = basename(args.folder)
+else:
+    book = epub.read_epub(args.book_path)
+    listofmp3s = glob(args.audio_folder + "/*.mp3")
+    cover = glob(args.audio_folder + "/*.jpg")
 
 
 def chapter_to_str(doc):
@@ -93,8 +102,6 @@ def upload_cover(cover_path, collectonID):
 
 
 def upload_lessons(collectionID):
-    listofmp3s = glob(args.audio_folder + "/*.mp3")
-    listofmp3s.sort()
     list_book_charpter = []
     for c in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
         if "split" in c.get_name():
