@@ -15,7 +15,7 @@ download_book() {
 	(
 		cd "$bookname"
 		# unzip file
-		unzip *.zip -d "${bookname}_splitted"
+		unzip -o *.zip -d "${bookname}_splitted"
 	)
 }
 
