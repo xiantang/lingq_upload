@@ -17,6 +17,9 @@ download_book() {
 		cd "$bookname"
 		# unzip file
 		unzip -o *.zip -d "${bookname}_splitted"
+		alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandreas/m4b-tool:latest'
+		m4b-tool split --audio-format mp3 --audio-bitrate 96k --audio-channels 1 --audio-samplerate 22050 "${bookname}.mp3"
+
 	)
 }
 
