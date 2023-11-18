@@ -26,10 +26,11 @@ parser = argparse.ArgumentParser(description="a tool for Upload audio book to li
 parser.add_argument("-a", "--audio_folder")
 parser.add_argument("-b", "--book_path")
 parser.add_argument("-t", "--title")
+parser.add_argument("-f", "--folder")
 args = parser.parse_args()
 
 
-if not (args.audio_folder or args.book_path or args.title):
+if not (args.audio_folder or args.book_path or args.title or args.folder):
     parser.error("No action requested, add --audio_folder or --book_path or --title")
 
 

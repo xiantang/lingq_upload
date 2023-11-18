@@ -6,3 +6,5 @@ __pycache__/*
 */*.epub
 */*.cue
 .env
+*/cover.jpg
+*/*.m3u

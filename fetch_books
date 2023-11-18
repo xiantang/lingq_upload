@@ -12,6 +12,11 @@ download_book() {
 	wget -q "https://english-e-reader.net/download?link=$bookname&format=cue" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.cue"
 	wget -q "https://english-e-reader.net/download?link=$bookname&format=mp3zip" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.zip"
 	# /download?link=body-on-the-rocks-denise-kirby&format=
+	(
+		cd "$bookname"
+		# unzip file
+		unzip *.zip
+	)
 }
 
 download_all_book() {
