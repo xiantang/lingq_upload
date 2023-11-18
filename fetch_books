@@ -1,9 +1,7 @@
 #!/bin/bash
 
-books=($(curl -s https://english-e-reader.net/level/pre-intermediate | grep "/book/.*>" | sed 's/<a.*="//' | sed 's/">//'))
-
-# | xargs -n 1 curl -s | grep --line-buffered -E "^words: "
-for book in "${books[@]}"; do
+download_book() {
+	book=$1
 	output=$(curl -s "https://english-e-reader.net$book")
 	words=$(grep --line-buffered -E "^words: " <<<$output | awk '{print $2}')
 	bookname=$(echo $book | sed 's|/book/||')
@@ -14,4 +12,14 @@ for book in "${books[@]}"; do
 	wget -q "https://english-e-reader.net/download?link=$bookname&format=cue" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.cue"
 	wget -q "https://english-e-reader.net/download?link=$bookname&format=mp3zip" -O /tmp/wget && mv /tmp/wget "$bookname/$bookname.zip"
 	# /download?link=body-on-the-rocks-denise-kirby&format=
-done
+}
+
+download_all_book() {
+	level=$1
+	books=($(curl -s "https://english-e-reader.net/level/$level" | grep "/book/.*>" | sed 's/<a.*="//' | sed 's/">//'))
+
+	# | xargs -n 1 curl -s | grep --line-buffered -E "^words: "
+	for book in "${books[@]}"; do
+		download_book $book
+	done
+}
