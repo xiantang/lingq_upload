@@ -1,0 +1,7 @@
+#!/bin/bash
+
+bookname=$1
+
+source ./fetch_books
+download_book "$bookname"
+python3 upload.py -f "$bookname"
