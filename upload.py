@@ -39,6 +39,16 @@ title = args.title
 discriprtion = """
 """
 
+level_mapping = {
+    "Beginner 1": 1,
+    "Beginner 2": 2,
+    "Intermediate 1": 3,
+    "Intermediate 2": 4,
+    "Advanced 1": 5,
+    "Advanced 2": 6,
+    "Advanced 1": 7,
+    "Advanced 2": 8,
+}
 
 if args.folder:
     book = glob(args.folder + "/*.epub")
@@ -48,11 +58,10 @@ if args.folder:
     listofmp3s.sort()
     with open(args.folder + "/metadata.json", "r") as file:
         file_content = file.read()  # Read the content of the file as a string
-        print(file_content)
         data = json.loads(file_content)
         title = data["title"]
-        print(title)
-    exit(0)
+        discriprtion = data["description"]
+        level = data["level"]
 
 
 else:
@@ -79,7 +88,7 @@ def create_collections(
         "isFeatured": False,
         "sourceURLEnabled": False,
         "language": "en",
-        "level": 1,
+        "level": level_mapping.get(level, 1),
         "sellAll": False,
         "tags": [],
         "title": title,
