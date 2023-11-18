@@ -2,6 +2,6 @@
 
 bookname=$1
 
-source ./fetch_books
+source fetch_books
 download_book "$bookname"
-python3 upload.py -f "$bookname"
+# python3 upload_book.py -f "$bookname"
