@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-
-
 import argparse
+import json
 import os
 from glob import glob
 from os.path import basename
@@ -47,7 +46,15 @@ if args.folder:
     cover = glob(args.folder + "/*.jpg")
     listofmp3s = glob(args.folder + "/*.mp3", recursive=True)
     listofmp3s.sort()
-    title = basename(args.folder)
+    with open(args.folder + "/metadata.json", "r") as file:
+        file_content = file.read()  # Read the content of the file as a string
+        print(file_content)
+        data = json.loads(file_content)
+        title = data["title"]
+        print(title)
+    exit(0)
+
+
 else:
     book = epub.read_epub(args.book_path)
     listofmp3s = glob(args.audio_folder + "/*.mp3")
