@@ -93,7 +93,7 @@ def upload_cover(cover_path, collectonID):
         ]
     )
     h = {"Authorization": key, "Content-Type": m.content_type}
-    url = "https://www.lingq.com/api/v3/en/collections/" + str(collectonID)
+    url = "https://www.lingq.com/api/v3/en/collections/" + str(collectonID) + "/"
     r = requests.patch(
         url=url,
         data=m,
