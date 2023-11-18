@@ -54,7 +54,9 @@ if args.folder:
     book = glob(args.folder + "/*.epub")
     book = epub.read_epub(book[0])
     cover = glob(args.folder + "/*.jpg")
-    listofmp3s = glob(args.folder + "/*.mp3", recursive=True)
+    audio_files = args.folder + "/" + args.folder + "_splitted" + "/*.mp3"
+    listofmp3s = glob(audio_files, recursive=True)
+    print(listofmp3s)
     listofmp3s.sort()
     with open(args.folder + "/metadata.json", "r") as file:
         file_content = file.read()  # Read the content of the file as a string
