@@ -103,9 +103,9 @@ def map_english_levels(original_level):
         "A1 Starter": "Beginner 1",
         "A2 Elementary": "Beginner 2",
         "B1 Pre-Intermediate": "Intermediate 1",
-        "B1+ Intermediate": "Intermediate 2",
-        "B2 Intermediate-Plus": "Advanced 1",
-        "B2+ Upper-Intermediate": "Advanced 2",
+        "B1+ Intermediate": "Intermediate 1",
+        "B2 Intermediate-Plus": "Intermediate 2",
+        "B2+ Upper-Intermediate": "Intermediate 2",
         "C1 Advanced": "Advanced 1",
         "C2 Unabridged": "Advanced 2",
     }
