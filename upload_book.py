@@ -125,6 +125,8 @@ def upload_lessons(collectionID):
         if "split" in c.get_name():
             list_book_charpter.append(c)
 
+    print("len of mp3 " + str(len(listofmp3s)))
+    print("len of chapter " + str(len(list_book_charpter)))
     for doc, audiofile in list(zip(list_book_charpter, listofmp3s)):
         s = chapter_to_str(doc)
         mp3name = basename(audiofile)
