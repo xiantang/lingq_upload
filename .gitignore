@@ -4,6 +4,7 @@ __pycache__/*
 *.mp3
 *.jpg
 *.m3u
+*.json
 */*.mp3
 */*.zip
 */*.epub
