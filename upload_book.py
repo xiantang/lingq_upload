@@ -13,6 +13,7 @@ from ebooklib import epub
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from generate_timestamp import generate_timestamp_for_course
+from update_lesson import update_lessons
 
 load_dotenv()
 key = os.getenv("APIKey")
@@ -167,3 +168,4 @@ if len(cover) > 0:
 upload_lessons(collectionID)
 
 generate_timestamp_for_course(collectionID)
+update_lessons(collectionID, tags, level_mapping.get(level, 1))
