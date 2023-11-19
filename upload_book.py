@@ -69,7 +69,7 @@ if args.folder:
         count = 0
         # because max is 10 tags
         for tag in data["tags"]:
-            if count > 9:
+            if count > 8:
                 break
             count += 1
             t.append(tag)
