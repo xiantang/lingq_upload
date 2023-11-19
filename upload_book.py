@@ -93,6 +93,7 @@ def create_collections(
     description,
 ):
     url = "https://www.lingq.com/api/v3/en/collections/"
+    tags.append("book")
     body = {
         "description": description,
         "hasPrice": False,
