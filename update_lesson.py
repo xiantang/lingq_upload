@@ -32,7 +32,7 @@ def update_metadata(collectonID, tags, level):
         headers=header,
         json=body,
     )
-    print(r.json())
+    print(r.status_code)
 
     level_body = {
         "ids": lesson_ids,
@@ -44,7 +44,7 @@ def update_metadata(collectonID, tags, level):
         headers=header,
         json=level_body,
     )
-    print(r.json())
+    print(r.status_code)
     shared_body = {
         "ids": lesson_ids,
         "status": "shared",
@@ -55,4 +55,4 @@ def update_metadata(collectonID, tags, level):
         headers=header,
         json=shared_body,
     )
-    print(r.json())
+    print(r.status_code)

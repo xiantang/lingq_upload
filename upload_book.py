@@ -97,6 +97,7 @@ def create_collections(
         "sellAll": False,
         "tags": tags,
         "title": title,
+        "sourceURL": "https://english-e-reader.net/book/" + args.folder,
     }
     r = requests.post(
         url,
