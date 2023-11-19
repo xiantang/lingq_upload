@@ -12,7 +12,7 @@ key = os.getenv("APIKey")
 header = {"Authorization": key, "Content-Type": "application/json"}
 
 
-def update_lessons(collectonID, tags, level):
+def update_metadata(collectonID, tags, level):
     lessons = get_lessons(collectonID)
     lesson_ids = []
     for result in lessons["results"]:
