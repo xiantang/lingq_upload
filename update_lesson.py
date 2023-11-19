@@ -36,5 +36,25 @@ def update_lessons(collectonID, tags, level):
     )
     print(r.json())
 
+    level_body = {
+        "ids": lesson_ids,
+        "level": level,
+    }
 
-update_lessons("1490112", ["comedy", "adventure"], 3)
+    r = requests.post(
+        url,
+        headers=header,
+        json=level_body,
+    )
+    print(r.json())
+    shared_body = {
+        "ids": lesson_ids,
+        "status": "shared",
+    }
+
+    r = requests.post(
+        url,
+        headers=header,
+        json=shared_body,
+    )
+    print(r.json())

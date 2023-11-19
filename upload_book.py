@@ -122,7 +122,7 @@ def upload_cover(cover_path, collectonID):
     )
 
 
-def upload_lessons(collectionID):
+def upload_aduios(collectionID):
     list_book_charpter = []
     for c in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
         if "split" in c.get_name():
@@ -165,7 +165,7 @@ collectionID = create_collections(title, discriprtion)
 if len(cover) > 0:
     upload_cover(cover[0], collectionID)
 
-upload_lessons(collectionID)
+upload_aduios(collectionID)
 
-generate_timestamp_for_course(collectionID)
 update_lessons(collectionID, tags, level_mapping.get(level, 1))
+generate_timestamp_for_course(collectionID)
