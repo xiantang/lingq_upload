@@ -64,12 +64,14 @@ if args.folder:
         title = data["title"]
         discriprtion = data["description"]
         level = data["level"]
+        tags = data["tags"]
 
 
 else:
     book = epub.read_epub(args.book_path)
     listofmp3s = glob(args.audio_folder + "/*.mp3")
     cover = glob(args.audio_folder + "/*.jpg")
+    tags = []
 
 
 def chapter_to_str(doc):
@@ -92,7 +94,7 @@ def create_collections(
         "language": "en",
         "level": level_mapping.get(level, 1),
         "sellAll": False,
-        "tags": [],
+        "tags": tags,
         "title": title,
     }
     r = requests.post(
