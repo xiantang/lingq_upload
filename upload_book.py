@@ -67,6 +67,7 @@ if args.folder:
         level = data["level"]
         t = []
         count = 0
+        # because max is 10 tags
         for tag in data["tags"]:
             if count > 9:
                 break
