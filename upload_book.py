@@ -65,9 +65,14 @@ if args.folder:
         title = data["title"]
         discriprtion = data["description"]
         level = data["level"]
-        tags = data["tags"]
-
-
+        t = []
+        count = 0
+        for tag in data["tags"]:
+            if count > 9:
+                break
+            count += 1
+            t.append(tag)
+        tags = t
 else:
     book = epub.read_epub(args.book_path)
     listofmp3s = glob(args.audio_folder + "/*.mp3")
@@ -104,6 +109,7 @@ def create_collections(
         json=body,
         headers=header,
     )
+    print(r.json())
     return r.json()["id"]
 
 
