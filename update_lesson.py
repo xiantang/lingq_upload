@@ -20,8 +20,6 @@ def update_metadata(collectonID, tags, level):
         lesson_ids.append(lesson_id)
     body = {
         "ids": lesson_ids,
-        "level": level,
-        "status": "shared",
         "add_shelves": ["books"],
         "add_tags": tags,
     }
