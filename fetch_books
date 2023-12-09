@@ -10,6 +10,11 @@ download_graded_book() {
 		title=$(
 			pup "#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-7.col-md-6.col-sm-12.col-xs-12 > div:nth-child(1) > h2 > b text{}" <<<"$page"
 		)
+
+			cover=$(
+			pup "#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-5.col-md-6.col-sm-12.col-xs-12 > div > span > img attr{href}" <<<"$page"
+		)
+	echo "$cover"
 		level="$(
 			pup '#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-7.col-md-6.col-sm-12.col-xs-12 > div:nth-child(2) > button:nth-child(1) text{}' <<<"$page" | xargs
 		)"

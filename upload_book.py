@@ -15,6 +15,32 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 from generate_timestamp import generate_timestamp_for_course
 from update_lesson import update_metadata
 
+load_dotenv()
+key = os.getenv("APIKey")
+postAddress = os.getenv("postAddress")
+mypath = os.getenv("mypath")
+status = os.getenv("status")
+
+parser = argparse.ArgumentParser(description="a tool for Upload audio book to lingq.")
+parser.add_argument("-a", "--audio_folder")
+parser.add_argument("-b", "--book_path")
+parser.add_argument("-t", "--title")
+parser.add_argument("-f", "--folder")
+args = parser.parse_args()
+level_mapping = {
+    "Beginner 1": 1,
+    "Beginner 2": 2,
+    "Intermediate 1": 3,
+    "Intermediate 2": 4,
+    "Advanced 1": 5,
+    "Advanced 2": 6,
+    "Advanced 1": 7,
+    "Advanced 2": 8,
+}
+
+
+header = {"Authorization": key, "Content-Type": "application/json"}
+
 
 def chapter_to_str(doc):
     soup = BeautifulSoup(doc.content, "html.parser")
@@ -23,10 +49,7 @@ def chapter_to_str(doc):
     return a
 
 
-def create_collections(
-    title,
-    description,
-):
+def create_collections(title, description, tags, level, sourceURL):
     url = "https://www.lingq.com/api/v3/en/collections/"
     tags.append("book")
     body = {
@@ -39,7 +62,7 @@ def create_collections(
         "sellAll": False,
         "tags": tags,
         "title": title,
-        "sourceURL": "https://english-e-reader.net/book/" + args.folder,
+        "sourceURL": sourceURL,
     }
     r = requests.post(
         url,
@@ -106,43 +129,16 @@ def upload_aduios(collectionID):
 
 
 if __name__ == "__main__":
-    load_dotenv()
-    key = os.getenv("APIKey")
-    postAddress = os.getenv("postAddress")
-    mypath = os.getenv("mypath")
-    status = os.getenv("status")
-
-    parser = argparse.ArgumentParser(
-        description="a tool for Upload audio book to lingq."
-    )
-    parser.add_argument("-a", "--audio_folder")
-    parser.add_argument("-b", "--book_path")
-    parser.add_argument("-t", "--title")
-    parser.add_argument("-f", "--folder")
-    args = parser.parse_args()
-
     if not (args.audio_folder or args.book_path or args.title or args.folder):
         parser.error(
             "No action requested, add --audio_folder or --book_path or --title"
         )
 
-    header = {"Authorization": key, "Content-Type": "application/json"}
-
     title = args.title
     discriprtion = """
     """
 
-    level_mapping = {
-        "Beginner 1": 1,
-        "Beginner 2": 2,
-        "Intermediate 1": 3,
-        "Intermediate 2": 4,
-        "Advanced 1": 5,
-        "Advanced 2": 6,
-        "Advanced 1": 7,
-        "Advanced 2": 8,
-    }
-
+    level = ""
     if args.folder:
         book = glob(args.folder + "/*.epub")
         book = epub.read_epub(book[0])
@@ -172,7 +168,9 @@ if __name__ == "__main__":
         cover = glob(args.audio_folder + "/*.jpg")
         tags = []
 
-    collectionID = create_collections(title, discriprtion)
+    collectionID = create_collections(
+        title, discriprtion, tags, level, "https://english-e-reader.net"
+    )
     if len(cover) > 0:
         upload_cover(cover[0], collectionID)
 
