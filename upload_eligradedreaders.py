@@ -36,7 +36,6 @@ for mp3 in listofmp3s:
     body = [
         ("language", "en"),
         ("collection", str(collectionID)),
-        ("description", "test"),
         ("isHidden", "true"),
         ("title", mp3name),
         ("save", "true"),
