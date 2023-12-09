@@ -16,12 +16,14 @@ download_graded_book() {
 		detail="$(
 			pup "#descrizione > div > div:nth-child(1) > strong text{}" <<<"$page"
 		)"
-		mkdir "$title" && cd "$title"
-
+		mkdir "$title"
 		jq -n --arg title "$title" --arg detail "$detail" --arg level "$level" '{"title": $title, "detail": $detail, "level": $level}' >"${title}.json"
-		wget $zipurl -O /tmp/wget && mv /tmp/wget "$title.zip"
-
-		cd -
+		wget $zipurl -O /tmp/wget && mv /tmp/wget "$title/$title.zip"
+		(
+			cd "$title"
+			# unzip file
+			unzip -o *.zip -d "${title}_splitted"
+		)
 	done
 }
 
