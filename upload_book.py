@@ -15,71 +15,6 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 from generate_timestamp import generate_timestamp_for_course
 from update_lesson import update_metadata
 
-load_dotenv()
-key = os.getenv("APIKey")
-postAddress = os.getenv("postAddress")
-mypath = os.getenv("mypath")
-status = os.getenv("status")
-
-
-parser = argparse.ArgumentParser(description="a tool for Upload audio book to lingq.")
-parser.add_argument("-a", "--audio_folder")
-parser.add_argument("-b", "--book_path")
-parser.add_argument("-t", "--title")
-parser.add_argument("-f", "--folder")
-args = parser.parse_args()
-
-
-if not (args.audio_folder or args.book_path or args.title or args.folder):
-    parser.error("No action requested, add --audio_folder or --book_path or --title")
-
-
-header = {"Authorization": key, "Content-Type": "application/json"}
-
-title = args.title
-discriprtion = """
-"""
-
-level_mapping = {
-    "Beginner 1": 1,
-    "Beginner 2": 2,
-    "Intermediate 1": 3,
-    "Intermediate 2": 4,
-    "Advanced 1": 5,
-    "Advanced 2": 6,
-    "Advanced 1": 7,
-    "Advanced 2": 8,
-}
-
-if args.folder:
-    book = glob(args.folder + "/*.epub")
-    book = epub.read_epub(book[0])
-    cover_file = args.folder + "/" + args.folder + "_splitted/cover.jpg"
-    cover = glob(cover_file)
-    audio_files = args.folder + "/" + args.folder + "_splitted" + "/*.mp3"
-    listofmp3s = glob(audio_files, recursive=True)
-    listofmp3s.sort()
-    with open(args.folder + "/metadata.json", "r") as file:
-        file_content = file.read()  # Read the content of the file as a string
-        data = json.loads(file_content)
-        title = data["title"]
-        discriprtion = data["description"]
-        level = data["level"]
-        t = []
-        count = 0
-        # because max is 10 tags
-        for tag in data["tags"]:
-            if count > 8:
-                break
-            count += 1
-            t.append(tag)
-        tags = t
-else:
-    book = epub.read_epub(args.book_path)
-    listofmp3s = glob(args.audio_folder + "/*.mp3")
-    cover = glob(args.audio_folder + "/*.jpg")
-    tags = []
-
 
 def chapter_to_str(doc):
     soup = BeautifulSoup(doc.content, "html.parser")
@@ -170,11 +105,78 @@ def upload_aduios(collectionID):
         )
 
 
-collectionID = create_collections(title, discriprtion)
-if len(cover) > 0:
-    upload_cover(cover[0], collectionID)
+if __name__ == "__main__":
+    load_dotenv()
+    key = os.getenv("APIKey")
+    postAddress = os.getenv("postAddress")
+    mypath = os.getenv("mypath")
+    status = os.getenv("status")
 
-upload_aduios(collectionID)
+    parser = argparse.ArgumentParser(
+        description="a tool for Upload audio book to lingq."
+    )
+    parser.add_argument("-a", "--audio_folder")
+    parser.add_argument("-b", "--book_path")
+    parser.add_argument("-t", "--title")
+    parser.add_argument("-f", "--folder")
+    args = parser.parse_args()
 
-update_metadata(collectionID, tags, level_mapping.get(level, 1))
-generate_timestamp_for_course(collectionID)
+    if not (args.audio_folder or args.book_path or args.title or args.folder):
+        parser.error(
+            "No action requested, add --audio_folder or --book_path or --title"
+        )
+
+    header = {"Authorization": key, "Content-Type": "application/json"}
+
+    title = args.title
+    discriprtion = """
+    """
+
+    level_mapping = {
+        "Beginner 1": 1,
+        "Beginner 2": 2,
+        "Intermediate 1": 3,
+        "Intermediate 2": 4,
+        "Advanced 1": 5,
+        "Advanced 2": 6,
+        "Advanced 1": 7,
+        "Advanced 2": 8,
+    }
+
+    if args.folder:
+        book = glob(args.folder + "/*.epub")
+        book = epub.read_epub(book[0])
+        cover_file = args.folder + "/" + args.folder + "_splitted/cover.jpg"
+        cover = glob(cover_file)
+        audio_files = args.folder + "/" + args.folder + "_splitted" + "/*.mp3"
+        listofmp3s = glob(audio_files, recursive=True)
+        listofmp3s.sort()
+        with open(args.folder + "/metadata.json", "r") as file:
+            file_content = file.read()  # Read the content of the file as a string
+            data = json.loads(file_content)
+            title = data["title"]
+            discriprtion = data["description"]
+            level = data["level"]
+            t = []
+            count = 0
+            # because max is 10 tags
+            for tag in data["tags"]:
+                if count > 8:
+                    break
+                count += 1
+                t.append(tag)
+            tags = t
+    else:
+        book = epub.read_epub(args.book_path)
+        listofmp3s = glob(args.audio_folder + "/*.mp3")
+        cover = glob(args.audio_folder + "/*.jpg")
+        tags = []
+
+    collectionID = create_collections(title, discriprtion)
+    if len(cover) > 0:
+        upload_cover(cover[0], collectionID)
+
+    upload_aduios(collectionID)
+
+    update_metadata(collectionID, tags, level_mapping.get(level, 1))
+    generate_timestamp_for_course(collectionID)
