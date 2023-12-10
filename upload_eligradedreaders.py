@@ -29,7 +29,7 @@ collectionID = create_collections(
 )
 
 
-listofmp3s = glob(folder + "/*/*.mp3", recursive=True)
+listofmp3s = glob(folder + "**/*.mp3", recursive=True)
 
 for mp3 in listofmp3s:
     mp3name = basename(mp3)
