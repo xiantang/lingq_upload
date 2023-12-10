@@ -8,7 +8,7 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from upload_book import create_collections
 
-name = "Jane Eyre"
+name = "Botchan"
 
 folder = name
 
