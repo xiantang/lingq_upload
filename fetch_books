@@ -1,34 +1,39 @@
 #!/bin/bash
 
-download_graded_book() {
+download_graded_book_by_url() {
+	url=$1
+	page=$(curl -s "$url")
+	zipurl=$(
+		pup '#modal_audio > div > div > div.modal-body > div > a attr{href}' <<<"$page" | sed 's|^|https://www.eligradedreaders.com|g'
+	)
+	title=$(
+		pup "#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-7.col-md-6.col-sm-12.col-xs-12 > div:nth-child(1) > h2 > b text{}" <<<"$page"
+	)
+
+	cover=$(
+		pup "#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-5.col-md-6.col-sm-12.col-xs-12 > div > span > img attr{href}" <<<"$page"
+	)
+	echo "$cover"
+	level="$(
+		pup '#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-7.col-md-6.col-sm-12.col-xs-12 > div:nth-child(2) > button:nth-child(1) text{}' <<<"$page" | xargs
+	)"
+	detail="$(
+		pup "#descrizione > div > div:nth-child(1) > strong text{}" <<<"$page"
+	)"
+	mkdir "$title"
+	jq -n --arg title "$title" --arg detail "$detail" --arg level "$level" '{"title": $title, "detail": $detail, "level": $level}' >"${title}.json"
+	wget -q $zipurl -O /tmp/wget && mv /tmp/wget "$title/$title.zip"
+	(
+		cd "$title"
+		# unzip file
+		unzip -o *.zip -d "${title}_splitted"
+	)
+}
+
+download_graded_books() {
 	urls="$(curl -s "https://www.eligradedreaders.com/english?productfilter_ids[]=50&productfilter_ids[]=58" | pup '#akeeba-renderjoomla > div > div > div.jb-product-section.col-sm-9 > div.j2store-products-row.row-0.nrow > div > div > div.j2store-product-item-gird-info > div > div > div.j2store_product_content_block > div > h2 > a attr{href}' | sed 's|^|https://www.eligradedreaders.com|g')"
 	for url in $urls; do
-		page=$(curl -s "$url")
-		zipurl=$(
-			pup '#modal_audio > div > div > div.modal-body > div > a attr{href}' <<<"$page" | sed 's|^|https://www.eligradedreaders.com|g'
-		)
-		title=$(
-			pup "#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-7.col-md-6.col-sm-12.col-xs-12 > div:nth-child(1) > h2 > b text{}" <<<"$page"
-		)
-
-			cover=$(
-			pup "#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-5.col-md-6.col-sm-12.col-xs-12 > div > span > img attr{href}" <<<"$page"
-		)
-	echo "$cover"
-		level="$(
-			pup '#akeeba-renderjoomla > div > div.row-height.mk-1 > div.col-lg-7.col-md-6.col-sm-12.col-xs-12 > div:nth-child(2) > button:nth-child(1) text{}' <<<"$page" | xargs
-		)"
-		detail="$(
-			pup "#descrizione > div > div:nth-child(1) > strong text{}" <<<"$page"
-		)"
-		mkdir "$title"
-		jq -n --arg title "$title" --arg detail "$detail" --arg level "$level" '{"title": $title, "detail": $detail, "level": $level}' >"${title}.json"
-		wget $zipurl -O /tmp/wget && mv /tmp/wget "$title/$title.zip"
-		(
-			cd "$title"
-			# unzip file
-			unzip -o *.zip -d "${title}_splitted"
-		)
+		download_graded_book_by_name $url
 	done
 }
 
