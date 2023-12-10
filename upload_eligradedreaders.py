@@ -8,7 +8,7 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from upload_book import create_collections
 
-name = "Botchan"
+name = "A Tale of Two Cities"
 
 folder = name
 
@@ -29,7 +29,7 @@ collectionID = create_collections(
 )
 
 
-listofmp3s = glob(folder + "/*/*/*.mp3", recursive=True)
+listofmp3s = glob(folder + "/*/*.mp3", recursive=True)
 
 for mp3 in listofmp3s:
     mp3name = basename(mp3)
