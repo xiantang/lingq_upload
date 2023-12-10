@@ -34,8 +34,6 @@ level_mapping = {
     "Intermediate 2": 4,
     "Advanced 1": 5,
     "Advanced 2": 6,
-    "Advanced 1": 7,
-    "Advanced 2": 8,
 }
 
 
