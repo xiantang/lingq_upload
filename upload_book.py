@@ -95,6 +95,9 @@ def upload_aduios(collectionID):
 
     print("len of mp3 " + str(len(listofmp3s)))
     print("len of chapter " + str(len(list_book_charpter)))
+    if len(list_book_charpter) == 0:
+        raise Exception("Sorry, chapters length cannot be zero")
+
     for doc, audiofile in list(zip(list_book_charpter, listofmp3s)):
         s = chapter_to_str(doc)
         mp3name = basename(audiofile)
