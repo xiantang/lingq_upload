@@ -21,10 +21,10 @@ download_graded_book_by_url() {
 		pup "#descrizione > div > div:nth-child(1) > strong text{}" <<<"$page"
 	)"
 	mkdir "$title"
-	jq -n --arg title "$title" --arg detail "$detail" --arg level "$level" '{"title": $title, "detail": $detail, "level": $level}' >"${title}.json"
 	wget -q $zipurl -O /tmp/wget && mv /tmp/wget "$title/$title.zip"
 	(
 		cd "$title"
+		jq -n --arg title "$title" --arg detail "$detail" --arg level "$level" '{"title": $title, "detail": $detail, "level": $level}' >"${title}.json"
 		# unzip file
 		unzip -o *.zip -d "${title}_splitted"
 	)
