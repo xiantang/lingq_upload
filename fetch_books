@@ -52,6 +52,9 @@ download_book() {
 	python3 fetch_meta_data.py -t $bookname >"${bookname}/metadata.json"
 	(
 		cd "$bookname"
+		ebook-convert "$bookname.epub" tmp.txt
+		ebook-convert tmp.txt "$bookname.epub"
+		rm tmp.txt
 		# unzip file
 		unzip -o *.zip -d "${bookname}_splitted"
 		# alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandreas/m4b-tool:latest'

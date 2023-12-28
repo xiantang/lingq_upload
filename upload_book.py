@@ -18,7 +18,6 @@ from update_lesson import update_metadata
 load_dotenv()
 key = os.getenv("APIKey")
 postAddress = os.getenv("postAddress")
-mypath = os.getenv("mypath")
 status = os.getenv("status")
 
 parser = argparse.ArgumentParser(description="a tool for Upload audio book to lingq.")
@@ -111,6 +110,7 @@ def upload_aduios(collectionID):
         }
         h = {"Authorization": key, "Content-Type": "application/json"}
         r = requests.post(postAddress, json=body, headers=h)
+        print(r.json())
         lesson_id = r.json()["id"]
         print("uploading audiofile...")
         body = [
