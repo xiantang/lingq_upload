@@ -31,6 +31,7 @@ def uploading(mp3):
     title = mp3name[:-4]
     t = title.split("-")[0].replace("_", " ")
     subtitle = title + ".en.srt"
+    subtitle_path = folder + "/" + subtitle
     body = [
         ("language", "en"),
         ("collection", str(collectionID)),
@@ -38,7 +39,7 @@ def uploading(mp3):
         ("title", t),
         ("save", "true"),
         ("audio", (mp3name, open(mp3, "rb"), "audio/mpeg")),
-        ("file", (subtitle, open(folder + "/" + subtitle, "rb"), "text/srt")),
+        ("file", (subtitle, open(subtitle_path, "rb"), "text/srt")),
     ]
     key = os.getenv("APIKey")
     #
@@ -67,3 +68,5 @@ for mp3 in listofmp3s:
         print(
             "An exception occurred:", error
         )  # An exception occurred: division by zero
+
+# yt-dlp -x --audio-format mp3 --convert-subs srt --write-auto-subs           --restrict-filenames     --playlist-reverse "https://www.youtube.com/watch?v=ye9V7U6WgeI&list=PLAy2UiT23ET1GA951P4EvZoztWpanX420&ab_channel=Luke%27sEnglishPodcast"  --sub-format ttml --convert-subs srt --exec 'before_dl:fn=$(echo %(_filename)s| sed "s/%(ext)s/en.srt/g") && ffmpeg -fix_sub_duration -i "$fn" -c:s text "$fn".tmp.srt && mv "$fn".tmp.srt "$fn"'
