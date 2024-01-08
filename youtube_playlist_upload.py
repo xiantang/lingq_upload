@@ -25,7 +25,8 @@ def num_sort(test_string):
 
 listofmp3s.sort(key=num_sort)
 
-for mp3 in listofmp3s:
+
+def uploading(mp3):
     mp3name = basename(mp3)
     title = mp3name[:-4]
     t = title.split("-")[0].replace("_", " ")
@@ -56,3 +57,13 @@ for mp3 in listofmp3s:
     lesson_id = r.json()["id"]
     print("uploading audiofile...")
     generate_timestamp(lesson_id)
+
+
+for mp3 in listofmp3s:
+    try:
+        uploading(mp3)
+    except Exception as error:
+        # handle the exception
+        print(
+            "An exception occurred:", error
+        )  # An exception occurred: division by zero
