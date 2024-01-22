@@ -30,11 +30,14 @@ def processing(mp3):
     chunk_length = 1000 * 1000  # in milliseconds
     chunks = [audio[i : i + chunk_length] for i in range(0, len(audio), chunk_length)]
     # split mp3
+    print("start to split audio")
     for i, chunk in enumerate(chunks):
         t = f"luke_back/{title}-{i}.mp3"
         chunk.export(t, format="mp3")
     chunks = glob(f"luke_back/{title}-*.mp3")
     text = ""
+
+    print("start to generate transcriptions, chunks: " + str(len(chunks)))
     for chunk in chunks:
         audio_file = open(chunk, "rb")
         transcript = client.audio.transcriptions.create(
@@ -42,7 +45,7 @@ def processing(mp3):
         )
         text = text + transcript.text
         print("finished add transcript for" + chunk)
-    print(text)
+    print("generate text " + text)
     body = [
         ("language", "en"),
         ("collection", str(collectionID)),
