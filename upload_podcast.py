@@ -28,7 +28,7 @@ def processing(mp3):
         chunk.export(t, format="mp3")
     chunks = glob(f"luke_back/{title}-*.mp3")
     text = ""
-    for _, chunk in chunks:
+    for chunk in chunks:
         print(chunk)
         audio_file = open(chunk, "rb")
         transcript = client.audio.transcriptions.create(
