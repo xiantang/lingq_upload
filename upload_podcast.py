@@ -1,4 +1,5 @@
 import os
+import tempfile
 import traceback
 from glob import glob
 
@@ -8,7 +9,8 @@ from openai import OpenAI
 from pydub import AudioSegment
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-from generate_timestamp import generate_timestamp
+from generate_timestamp import (generate_timestamp,
+                                generate_timestamp_for_course)
 
 client = OpenAI(api_key="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")
 
@@ -19,7 +21,7 @@ collectionID = "1580800"
 
 folder = "luke/*.mp3"
 listofmp3s = glob(folder)
-newmp3s = listofmp3s[5:390]
+newmp3s = listofmp3s[41:390]
 
 
 def processing(mp3):
@@ -45,15 +47,23 @@ def processing(mp3):
         )
         text = text + transcript.text
         print("finished add transcript for" + chunk)
+    sentences = text.split(".")
+    text = "\n".join(
+        sentence.strip() + "." for sentence in sentences if sentence.strip()
+    )
+    tmp = tempfile.NamedTemporaryFile()
+    with open(tmp.name, "w") as f:
+        f.write(text)
     print("generate text " + text)
     body = [
         ("language", "en"),
         ("collection", str(collectionID)),
         ("isHidden", "true"),
-        ("title", title),
+        ("title", title.replace("-", " ")),
         ("save", "true"),
         ("audio", (basename, open(mp3, "rb"), "audio/mpeg")),
         ("text", text),
+        ("file", (tmp.name, open(tmp.name, "rb"), "text/plain")),
     ]
     m = MultipartEncoder(body)
     h = {
@@ -71,8 +81,12 @@ def processing(mp3):
     generate_timestamp(lesson_id)
 
 
-for mp3 in newmp3s:
-    try:
-        processing(mp3)
-    except Exception as error:
-        print(traceback.format_exc())
+if __name__ == "__main__":
+    for mp3 in newmp3s:
+        try:
+            processing(mp3)
+        except Exception as error:
+            print(traceback.format_exc())
+    print(collectionID)
+
+    generate_timestamp_for_course(collectionID)

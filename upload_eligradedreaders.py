@@ -56,5 +56,3 @@ for mp3 in listofmp3s:
     print(r.json())
     # lesson_id = r.json()["id"]
     # print("uploading audiofile...")
-
-print(collectionID)
