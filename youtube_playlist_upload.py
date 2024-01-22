@@ -14,7 +14,7 @@ listofmp3s = glob(folder + "**/*.mp3")
 
 # print(listofmp3s)
 
-collectionID = "1559870"
+collectionID = "1568793"
 load_dotenv()
 listofmp3s.sort()
 
@@ -69,4 +69,4 @@ for mp3 in listofmp3s:
             "An exception occurred:", error
         )  # An exception occurred: division by zero
 
-# yt-dlp -x --audio-format mp3 --convert-subs srt --write-auto-subs           --restrict-filenames     --playlist-reverse "https://www.youtube.com/watch?v=ye9V7U6WgeI&list=PLAy2UiT23ET1GA951P4EvZoztWpanX420&ab_channel=Luke%27sEnglishPodcast"  --sub-format ttml --convert-subs srt --exec 'before_dl:fn=$(echo %(_filename)s| sed "s/%(ext)s/en.srt/g") && ffmpeg -fix_sub_duration -i "$fn" -c:s text "$fn".tmp.srt && mv "$fn".tmp.srt "$fn"'
+# yt-dlp -x --audio-format mp3 --convert-subs srt --write-auto-subs           --restrict-filenames     --playlist-reverse "https://www.youtube.com/watch?v=c6_aduAL25c&list=PLWYV8lHn0fV9rcRuxs_--mzLZewjziP4-&index=190"  --sub-format ttml --convert-subs srt --exec 'before_dl:fn=$(echo %(_filename)s| sed "s/%(ext)s/en.srt/g") && ffmpeg -fix_sub_duration -i "$fn" -c:s text "$fn".tmp.srt && mv "$fn".tmp.srt "$fn"'

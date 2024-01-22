@@ -5,6 +5,7 @@ __pycache__/*
 *.jpg
 *.m3u
 *.json
+openaiPyEnv/
 */*.mp3
 */*.zip
 */*.epub
