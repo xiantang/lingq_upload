@@ -1,4 +1,5 @@
 import os
+import traceback
 from glob import glob
 
 import requests
@@ -40,7 +41,7 @@ def processing(mp3):
             model="whisper-1", file=audio_file
         )
         text = text + transcript.text
-        print("finished " + chunk)
+        print("finished add transcript for" + chunk)
     print(text)
     body = [
         ("language", "en"),
@@ -48,7 +49,7 @@ def processing(mp3):
         ("isHidden", "true"),
         ("title", title),
         ("save", "true"),
-        ("audio", (basename(mp3), open(mp3, "rb"), "audio/mpeg")),
+        ("audio", (basename, open(mp3, "rb"), "audio/mpeg")),
         ("text", text),
     ]
     m = MultipartEncoder(body)
@@ -71,7 +72,4 @@ for mp3 in newmp3s:
     try:
         processing(mp3)
     except Exception as error:
-        # handle the exception
-        print(
-            "An exception occurred:", error
-        )  # An exception occurred: division by zero
+        print(traceback.format_exc())
