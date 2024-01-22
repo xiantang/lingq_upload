@@ -2,16 +2,12 @@ import os
 from glob import glob
 
 from dotenv import load_dotenv
+from openai import OpenAI
 from pydub import AudioSegment
 
+client = OpenAI(api_key="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")
+
 load_dotenv()
-
-# from openai import OpenAI
-
-# client = OpenAI()
-#
-# audio_file = open("/path/to/file/audio.mp3", "rb")
-# transcript = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
 
 
 folder = "luke/*.mp3"
@@ -30,6 +26,20 @@ def processing(mp3):
     for i, chunk in enumerate(chunks):
         t = f"luke_back/{title}-{i}.mp3"
         chunk.export(t, format="mp3")
+    chunks = glob(f"luke_back/{title}-*.mp3")
+    text = ""
+    for _, chunk in chunks:
+        print(chunk)
+        audio_file = open(chunk, "rb")
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1", file=audio_file
+        )
+        print(transcript)
+        text = text + transcript.text
+    print(11)
+    print(text)
+
+    # print(chunks)
 
 
 for mp3 in newmp3s:
