@@ -1,13 +1,19 @@
 import os
 from glob import glob
 
+import requests
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydub import AudioSegment
+from requests_toolbelt.multipart.encoder import MultipartEncoder
+
+from generate_timestamp import generate_timestamp
 
 client = OpenAI(api_key="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")
 
 load_dotenv()
+key = os.getenv("APIKey")
+collectionID = "1580800"
 
 
 folder = "luke/*.mp3"
@@ -29,17 +35,36 @@ def processing(mp3):
     chunks = glob(f"luke_back/{title}-*.mp3")
     text = ""
     for chunk in chunks:
-        print(chunk)
         audio_file = open(chunk, "rb")
         transcript = client.audio.transcriptions.create(
             model="whisper-1", file=audio_file
         )
-        print(transcript)
         text = text + transcript.text
-    print(11)
+        print("finished " + chunk)
     print(text)
+    body = [
+        ("language", "en"),
+        ("collection", str(collectionID)),
+        ("isHidden", "true"),
+        ("title", title),
+        ("save", "true"),
+        ("audio", (basename(mp3), open(mp3, "rb"), "audio/mpeg")),
+        ("text", text),
+    ]
+    m = MultipartEncoder(body)
+    h = {
+        "Authorization": key,
+        "Content-Type": m.content_type,
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    }
 
-    # print(chunks)
+    r = requests.post(
+        "https://www.lingq.com/api/v3/en/lessons/import/", data=m, headers=h
+    )
+    print(r.text)
+    lesson_id = r.json()["id"]
+    print("uploading audiofile...")
+    generate_timestamp(lesson_id)
 
 
 for mp3 in newmp3s:
