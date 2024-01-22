@@ -28,7 +28,8 @@ def processing(mp3):
     chunks = [audio[i : i + chunk_length] for i in range(0, len(audio), chunk_length)]
     # split mp3
     for i, chunk in enumerate(chunks):
-        chunk.export(f"luke_back/{title}-{i}.mp3", format="mp3")
+        t = f"luke_back/{title}-{i}.mp3"
+        chunk.export(t, format="mp3")
 
 
 for mp3 in newmp3s:
