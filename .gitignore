@@ -10,6 +10,8 @@ openaiPyEnv/
 */*.zip
 */*.epub
 */*.cue
+luke/
 .env
+.DS_Store
 */cover.jpg
 */*.m3u
