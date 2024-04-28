@@ -1,5 +1,5 @@
+import argparse
 import os
-import traceback
 from glob import glob
 
 import requests
@@ -7,14 +7,59 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+parser = argparse.ArgumentParser(description="A tool for uploading a podcast to LingQ.")
+parser.add_argument("-p", "--mp3_path", required=True, help="Path to the MP3 file.")
+parser.add_argument("-t", "--title", required=True, help="Title of the podcast.")
+parser.add_argument(
+    "-d", "--description", required=False, help="Description of the podcast."
+)
+args = parser.parse_args()
+
 load_dotenv()
 key = os.getenv("APIKey")
-collectionID = "1696280"
+# collectionID = "1696280"
+
+level_mapping = {
+    "Beginner 1": 1,
+    "Beginner 2": 2,
+    "Intermediate 1": 3,
+    "Intermediate 2": 4,
+    "Advanced 1": 5,
+    "Advanced 2": 6,
+}
+
+header = {"Authorization": key, "Content-Type": "application/json"}
 
 
-folder = "luke/*.mp3"
-listofmp3s = glob(folder)
-newmp3s = listofmp3s[206:306]
+def create_collections(title, description, tags, level, sourceURL):
+    url = "https://www.lingq.com/api/v3/en/collections/"
+    if description == None:
+        description = ""
+
+    tags.append("book")
+    body = {
+        "description": description,
+        "hasPrice": False,
+        "isFeatured": False,
+        "sourceURLEnabled": False,
+        "language": "en",
+        "level": level_mapping.get(level, 1),
+        "sellAll": False,
+        "tags": tags,
+        "title": title,
+        "sourceURL": sourceURL,
+    }
+    r = requests.post(
+        url,
+        json=body,
+        headers=header,
+    )
+    return r.json()["id"]
+
+
+collectionID = create_collections(
+    args.title, args.description, ["Podcast"], "Intermediate 2", ""
+)
 
 
 def processing_without_transcript(mp3):
@@ -53,15 +98,6 @@ def processing_without_transcript(mp3):
         )
         print("success " + title)
         print(r.text)
-        # lesson_id = r.json()["id"]
 
 
-if __name__ == "__main__":
-    for mp3 in newmp3s:
-        try:
-            processing_without_transcript(mp3)
-        except Exception as error:
-            print(traceback.format_exc())
-    print(collectionID)
-
-    # generate_timestamp_for_course(collectionID)
+processing_without_transcript(args.mp3_path)

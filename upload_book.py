@@ -66,7 +66,6 @@ def create_collections(title, description, tags, level, sourceURL):
         json=body,
         headers=header,
     )
-    print(r.json())
     return r.json()["id"]
 
 
