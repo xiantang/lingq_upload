@@ -67,3 +67,7 @@ python3 upload.py -a  ~/Downloads/What_Happened_at_Seacliffe-Denise_Kirby_splitt
 python3 upload.py -a  ~/Downloads/The_Murder_at_the_Vicarage-Agatha_Christie_splitted/ -b ~/Downloads/The_Murder_at_the_Vicarage-Agatha_Christie.epub  -t "The Murder at the Vicarage"
 ```
 
+## Go downloader (download_book replacement)
+- Build/run: `go run ./cmd/download_book -book /book/body-on-the-rocks-denise-kirby -out ./downloads`
+- Flags: `-book` (or `-b`) accepts a slug, `/book/<slug>`, or full english-e-reader URL; `-out` sets the destination root; `-skip-unzip` skips extracting the mp3 zip.
+- Extensibility: downloaders are provider-based (see `internal/downloader`). Add a new provider implementing the `Provider` interface and register it in `cmd/download_book/main.go` to support more sites.
