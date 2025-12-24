@@ -238,7 +238,7 @@ func parseEnglishEReaderMetadata(html string) englishEReaderMetadata {
 }
 
 func detectAvailableFormats(html string) map[string]bool {
-	re := regexp.MustCompile(`download\\?link=[^&]+&format=([a-zA-Z0-9]+)`)
+	re := regexp.MustCompile(`download\?link=[^&]+&format=([a-zA-Z0-9]+)`)
 	matches := re.FindAllStringSubmatch(strings.ToLower(html), -1)
 	formats := make(map[string]bool, len(matches))
 	for _, m := range matches {
