@@ -46,6 +46,48 @@ def chapter_to_str(doc):
     return a
 
 
+def extract_cover_from_epub(book_obj, output_dir):
+    """
+    Extract cover image from EPUB object
+    
+    Args:
+        book_obj: ebooklib EPUB object
+        output_dir: Directory to save the cover image
+        
+    Returns:
+        str: Path to extracted cover image, or None if not found
+    """
+    try:
+        # Iterate through all image items in the EPUB
+        for item in book_obj.get_items_of_type(ebooklib.ITEM_IMAGE):
+            item_name = item.get_name().lower()
+            
+            # Look for images with 'cover' in the filename
+            if 'cover' in item_name:
+                # Determine file extension
+                if item_name.endswith('.jpg') or item_name.endswith('.jpeg'):
+                    ext = 'jpg'
+                elif item_name.endswith('.png'):
+                    ext = 'png'
+                else:
+                    ext = 'jpg'  # Default to jpg
+                
+                # Save the cover image
+                cover_path = os.path.join(output_dir, f'cover.{ext}')
+                with open(cover_path, 'wb') as f:
+                    f.write(item.content)
+                
+                print(f"Extracted cover from EPUB: {item.get_name()}")
+                return cover_path
+        
+        # No cover found
+        return None
+        
+    except Exception as e:
+        print(f"Warning: Failed to extract cover from EPUB: {e}")
+        return None
+
+
 def create_collections(title, description, tags, level, sourceURL):
     url = "https://www.lingq.com/api/v3/en/collections/"
     tags.append("book")
@@ -194,6 +236,17 @@ if __name__ == "__main__":
         book = epub.read_epub(args.book_path)
         listofmp3s = glob(args.audio_folder + "/*.mp3")
         cover = glob(args.audio_folder + "/*.jpg")
+        
+        # If no cover found in folder, try extracting from EPUB
+        if len(cover) == 0:
+            print("No cover image found in folder, extracting from EPUB...")
+            extracted_cover = extract_cover_from_epub(book, args.audio_folder)
+            if extracted_cover:
+                cover = [extracted_cover]
+                print(f"Successfully extracted cover: {extracted_cover}")
+            else:
+                print("No cover image found in EPUB, skipping cover upload")
+        
         tags = []
         
         # Check if metadata.json exists in the audio folder
