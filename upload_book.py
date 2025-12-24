@@ -86,15 +86,35 @@ def upload_cover(cover_path, collectonID):
 
 
 def upload_aduios(collectionID):
+    # First, try to find chapters with "split" in the name (pre-split EPUBs)
     list_book_charpter = []
     for c in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
         if "split" in c.get_name():
             list_book_charpter.append(c)
 
+    # If no split chapters found, use all content documents (single-file EPUBs)
+    # Exclude titlepage to avoid uploading non-content pages
+    if len(list_book_charpter) == 0:
+        print("No split chapters found, treating as single-file EPUB")
+        for c in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            name_lower = c.get_name().lower()
+            # Exclude titlepage, but include index/content files
+            if "title" not in name_lower or "index" in name_lower:
+                list_book_charpter.append(c)
+
     print("len of mp3 " + str(len(listofmp3s)))
     print("len of chapter " + str(len(list_book_charpter)))
+    
+    # Validate that we have chapters
     if len(list_book_charpter) == 0:
-        raise Exception("Sorry, chapters length cannot be zero")
+        raise Exception("Sorry, no valid chapters found in EPUB. The EPUB may be empty or corrupted.")
+    
+    # Validate that chapter count matches MP3 count (strict mode)
+    if len(list_book_charpter) != len(listofmp3s):
+        raise Exception(
+            f"Chapter count ({len(list_book_charpter)}) must match MP3 count ({len(listofmp3s)}). "
+            f"Please ensure you have the same number of text chapters and audio files."
+        )
 
     for doc, audiofile in list(zip(list_book_charpter, listofmp3s)):
         s = chapter_to_str(doc)
@@ -108,9 +128,17 @@ def upload_aduios(collectionID):
             "text": s,
         }
         h = {"Authorization": key, "Content-Type": "application/json"}
-        r = requests.post(postAddress, json=body, headers=h)
-        print(r.json())
-        lesson_id = r.json()["id"]
+        # Use v3 API endpoint (v2 is obsolete for POST)
+        lesson_endpoint = postAddress.replace("/v2/", "/v3/")
+        r = requests.post(lesson_endpoint, json=body, headers=h)
+        response_data = r.json()
+        print(response_data)
+        
+        # Handle API response - check if it's a dict with 'id' key
+        if isinstance(response_data, dict) and "id" in response_data:
+            lesson_id = response_data["id"]
+        else:
+            raise Exception(f"Failed to create lesson. API response: {response_data}")
         print("uploading audiofile...")
         body = [
             ("language", "en"),
@@ -167,6 +195,32 @@ if __name__ == "__main__":
         listofmp3s = glob(args.audio_folder + "/*.mp3")
         cover = glob(args.audio_folder + "/*.jpg")
         tags = []
+        
+        # Check if metadata.json exists in the audio folder
+        metadata_path = os.path.join(args.audio_folder, "metadata.json")
+        if os.path.exists(metadata_path):
+            print(f"Found metadata.json, loading metadata...")
+            with open(metadata_path, "r") as file:
+                data = json.loads(file.read())
+                # Use metadata values, but allow command-line title to override
+                if not args.title or args.title == data.get("title", ""):
+                    title = data.get("title", title)
+                discriprtion = data.get("description", discriprtion)
+                level = data.get("level", level)
+                # Get tags from metadata (max 10, but script already limits to 9)
+                metadata_tags = data.get("tags", [])
+                t = []
+                count = 0
+                for tag in metadata_tags:
+                    if count > 8:  # max is 10, but we add "book" tag later
+                        break
+                    # Clean up HTML entities in tags
+                    clean_tag = tag.replace("&nbsp;", "").strip()
+                    if clean_tag:  # only add non-empty tags
+                        t.append(clean_tag)
+                        count += 1
+                tags = t
+                print(f"Loaded metadata: level={level}, tags count={len(tags)}")
 
     collectionID = create_collections(
         title, discriprtion, tags, level, "https://english-e-reader.net"

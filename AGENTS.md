@@ -229,6 +229,12 @@ Upload scripts follow this pattern:
 5. Upload lessons with audio in sequence
 6. Update metadata and generate timestamps
 
+**EPUB Format Handling:**
+- **Split EPUBs**: Books with chapters named like `split_001.xhtml` are processed as multiple lessons
+- **Single-file EPUBs**: Books with one content file (e.g., from Go downloader) are processed as one lesson
+- **Strict matching**: Chapter count must equal MP3 count - script will error if mismatched
+- **API version**: Uses LingQ API v3 for lesson creation (v2 is deprecated)
+
 ## Common Pitfalls
 
 1. **Missing .env file**: Scripts require `.env` with API credentials
