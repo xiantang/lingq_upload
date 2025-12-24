@@ -1,73 +1,200 @@
 # lingq_upload
 
 ## Purpose
-This python script is to work with [LingQ](https://www.lingq.com) [API](https://www.lingq.com/apidocs/), specifically to upload a long list of audio files.
+This project automates uploading audiobooks to [LingQ](https://www.lingq.com) using the [LingQ API](https://www.lingq.com/apidocs/).
 
-To help me better prepare for my [DELF B2](https://www.ciep.fr/en/delf-tout-public/detailed-information-the-examinations) exam I decided to listen and read ["Steve Jobs" by Walter Isaacson ](https://en.wikipedia.org/wiki/Steve_Jobs_(book)).
+It consists of two main components:
+1. **Go downloader** - Downloads books from sites like english-e-reader.net
+2. **Python uploader** - Uploads books (EPUB + MP3s) to LingQ
 
-I legally purchased both the french Kindle book and audio book from Audible, then used [OpenAudible](https://github.com/openaudible/openaudible) and [mp3splitter-js](https://github.com/gbouthenot/mp3splitter-js) to create the audio files.
+## Quick Start
 
-With the Kindle reader I am able to shrink the font size to a tiny size and copy and paste (_painfully_) one chapter at a time. Thankfully the [New LinqQ Reader](https://www.lingq.com/en/learn/fr/web/community/forum/updates-tips-and-known-issues/announcing-the-new-lingq-reader) makes dumping the text easier and much readable than using the legacy version. 
+### 1. Setup Environment
 
-If there's an easier way to scrap the content "legally" from a Kindle book with latest version of Amazon Kindle Reader, I did not find one in my quick research. 
-
-
-__EDIT: Publisher has limits places on Kindle Reader:__ https://twitter.com/paulwillgamble/status/1181667329798791168?s=20
-
-
-
-Uploading an audio file was very problematic and not at all intuitive in part because of the limitations of [Django REST Framework (DRF)](https://stackoverflow.com/a/28036805/664933
-).
-
-Here's a great [article](https://goodcode.io/articles/django-rest-framework-file-upload/) for reference. 
-
-
-
-## To Use Script
-Create ``.env``, make sure it has the following parameters:
-
-```
-#APIKey="Token api_number"
-APIKey="Token [https://www.lingq.com/accounts/apikey]"
-
-# There is an address as per API POST doc that includes in substitute of 'xx' a two letter language code (ie 'fr' = french)
-postAddress="https://www.lingq.com/api/v2/xx/lessons/"
-
-# Specify private if material is copyrighted or personal
-status="private"
-```
-
-Command:
-
-```python upload.py -h```
-
-## Thanks
-[mescyn](https://www.lingq.com/en/learn/fr/web/community/forum/lingq-developer-forum/python-uploading-audio-via-api) - on Lingq Developer Forum
-
-[beeman](https://www.lingq.com/en/learn/fr/web/community/forum/lingq-developer-forum/python-example-for-creating-a-lesson-for-a-course) - on Lingq Developer Forum
-
-[@gbouthenot](https://github.com/gbouthenot) - for making [mp3splitter-js](https://github.com/gbouthenot/mp3splitter-js)
-
-
-
-
-
-# command
+Create a `.env` file in the project root:
 
 ```bash
-python3 upload.py -a ~/Downloads/Princess_Diana-Cherry_Gilchrist_splitted/ -b ~/Downloads/Princess_Diana-Cherry_Gilchrist.epub -t "Princess Diana"
-python3 upload.py -a ~/Downloads/Marley_and_Me-John_Grogan_splitted/ -b ~/Downloads/Marley_and_Me-John_Grogan.epub       --t "Marley and Me"
-python3 upload.py -a ~/Downloads/The_Count_of_Monte_Cristo-Alexandre_Dumas_Audio/ -b ~/Downloads/The_Count_of_Monte_Cristo-Alexandre_Dumas.epub       -t "The Count of Monte Cristo"
-python3 upload.py -a ~/Downloads/The_War_Of_The_Worlds-H_G_Wells_Audio/ -b ~/Downloads/The_War_Of_The_Worlds-H_G_Wells.epub       -t "The War Of The Worlds"
-python3 upload.py -a  ~/Downloads/Dangerous_Game-Harris_William_splitted/ -b /home/neo/Downloads/Dangerous_Game-Harris_William.epub       -t "Dangerous Game"
-python3 upload.py -a  ~/Downloads/The_Ring-Bernard_Smith_splitted/ -b /home/neo/Downloads/The_Ring-Bernard_Smith.mp3       -t "The Ring"
-python3 upload.py -a  ~/Downloads/Breakfast/ -b /home/neo/Downloads/Breakfast_at_Tiffanys-Truman_Capote.epub       -t "Breakfast at Tiffany's "
-python3 upload.py -a  ~/Downloads/Strangers_on_a_Train-Patricia_Highsmith_splitted/ -b ~/Downloads/Strangers_on_a_Train-Patricia_Highsmith.epub -t "Strangers on a Train"
-python3 upload.py -a  ~/Downloads/What_Happened_at_Seacliffe-Denise_Kirby_splitted/ -b ~/Downloads/What_Happened_at_Seacliffe-Denise_Kirby.epub  -t "What Happened at Seacliffe"
-python3 upload.py -a  ~/Downloads/The_Murder_at_the_Vicarage-Agatha_Christie_splitted/ -b ~/Downloads/The_Murder_at_the_Vicarage-Agatha_Christie.epub  -t "The Murder at the Vicarage"
+# Get your API key from https://www.lingq.com/accounts/apikey
+APIKey="Token YOUR_API_KEY_HERE"
+
+# Language code (en for English, fr for French, etc.)
+postAddress="https://www.lingq.com/api/v2/en/lessons/"
+
+# Status: "shared" for public, "private" for copyrighted material
+status="shared"
 ```
 
-## Go downloader (download_book replacement)
-- Build/run: `go run ./cmd/download_book -book /book/body-on-the-rocks-denise-kirby -out ./downloads`
-- Flags: `-book` (or `-b`) accepts a slug, `/book/<slug>`, or full english-e-reader URL; `-out` sets the destination root; `-skip-unzip` skips extracting the mp3 zip.
-- Extensibility: downloaders are provider-based (see `internal/downloader`). Add a new provider implementing the `Provider` interface and register it in `cmd/download_book/main.go` to support more sites.
+### 2. Download a Book (Go)
+
+```bash
+# Download from english-e-reader.net
+go run ./cmd/download_book -book plastic-louise-spilsbury -out ./downloads
+
+# Or use full URL
+go run ./cmd/download_book -book https://english-e-reader.net/book/plastic-louise-spilsbury -out ./downloads
+```
+
+This creates a directory with:
+```
+downloads/plastic-louise-spilsbury/
+├── metadata.json          # Book info (title, level, tags, description)
+├── plastic-louise-spilsbury.epub
+├── plastic-louise-spilsbury.mp3  # May need splitting
+├── plastic-louise-spilsbury.cue
+└── cover.jpg
+```
+
+### 3. Upload to LingQ (Python)
+
+**Simple usage** (one directory with everything):
+```bash
+python3 upload_book.py downloads/plastic-louise-spilsbury
+```
+
+**With verbose logging**:
+```bash
+python3 upload_book.py downloads/plastic-louise-spilsbury -v
+```
+
+**Override metadata**:
+```bash
+python3 upload_book.py my-book --title "Custom Title" --level "Advanced 1" -v
+```
+
+**Alternative syntax**:
+```bash
+python3 upload_book.py -d downloads/my-book -v
+```
+
+## Directory Structure
+
+The uploader supports two directory formats:
+
+### Format 1: Flat structure (Go downloader output)
+```
+book-name/
+├── metadata.json
+├── book-name.epub
+├── cover.jpg
+├── Chapter_01.mp3
+├── Chapter_02.mp3
+└── ...
+```
+
+### Format 2: Legacy format with _splitted subdirectory
+```
+book-name/
+├── metadata.json
+├── book-name.epub
+└── book-name_splitted/
+    ├── cover.jpg
+    ├── Chapter_01.mp3
+    ├── Chapter_02.mp3
+    └── ...
+```
+
+Both formats are automatically detected.
+
+## Requirements
+
+**Directory must contain:**
+- ✅ `metadata.json` (required) - Book metadata
+- ✅ `*.epub` file (required) - Book text
+- ✅ Multiple `*.mp3` files (required) - Chapter audio (one per chapter)
+- ✅ `cover.jpg` or `cover.png` (optional) - Will extract from EPUB if missing
+
+**Note:** If you have a single large MP3 file + CUE, you need to split it into chapters first.
+
+## Command Reference
+
+### Upload Book
+
+```bash
+# Basic usage
+python3 upload_book.py <directory>
+
+# Options
+python3 upload_book.py <directory> [options]
+
+  -d, --dir DIRECTORY        Alternative to positional directory argument
+  --title TITLE              Override title from metadata.json
+  --level LEVEL              Override level (Beginner 1/2, Intermediate 1/2, Advanced 1/2)
+  --tags TAGS                Override tags (comma-separated)
+  -v, --verbose              Enable verbose debug logging
+  -h, --help                 Show help message
+
+# Examples
+python3 upload_book.py downloads/my-book
+python3 upload_book.py downloads/my-book -v
+python3 upload_book.py downloads/my-book --title "Custom Title" --level "Advanced 1"
+python3 upload_book.py -d downloads/my-book --tags "fiction,classic,novel" -v
+```
+
+### Download Book (Go)
+
+```bash
+# Download book
+go run ./cmd/download_book -book <slug-or-url> -out <directory>
+
+# Options
+  -book, -b <value>          Book slug, /book/<slug>, or full URL (required)
+  -out <directory>           Output directory (default: ./downloads)
+  -skip-unzip                Skip extracting MP3 zip archive
+
+# Examples
+go run ./cmd/download_book -book plastic-louise-spilsbury -out ./downloads
+go run ./cmd/download_book -book /book/body-on-the-rocks-denise-kirby -out ./downloads
+go run ./cmd/download_book -book https://english-e-reader.net/book/the-goldbug-edgar-allan-poe -out ./books
+```
+
+## metadata.json Format
+
+```json
+{
+    "title": "Book Title - Author Name - English-e-reader",
+    "level": "Beginner 1",
+    "author": "Author Name",
+    "description": "Book description...",
+    "tags": ["tag1", "tag2", "tag3"]
+}
+```
+
+**Levels:** `Beginner 1`, `Beginner 2`, `Intermediate 1`, `Intermediate 2`, `Advanced 1`, `Advanced 2`
+
+**Tags:** Maximum 9 tags (script adds "book" tag automatically = 10 total max)
+
+## Troubleshooting
+
+**"metadata.json not found"**
+- Ensure your directory contains `metadata.json`
+- Use the Go downloader to automatically generate it
+
+**"No MP3 files found"**
+- Check that you have multiple MP3 files (one per chapter)
+- If you have a single large MP3 + CUE file, split it first using a tool like `mp3splt`
+
+**"Chapter count must match MP3 count"**
+- The EPUB must have the same number of chapters as MP3 files
+- Check your EPUB structure and MP3 file count
+
+**"Skipping large MP3 file"**
+- Files over 100MB are assumed to be unsplit
+- Use `mp3splt` or similar to split based on CUE file
+
+## Go Downloader Details
+
+- **Build/run:** `go run ./cmd/download_book -book <slug> -out ./downloads`
+- **Flags:** `-book` (or `-b`) accepts a slug, `/book/<slug>`, or full english-e-reader URL; `-out` sets the destination root; `-skip-unzip` skips extracting the mp3 zip
+- **Extensibility:** Downloaders are provider-based (see `internal/downloader`). Add a new provider implementing the `Provider` interface and register it in `cmd/download_book/main.go` to support more sites
+
+## Credits
+
+- [mescyn](https://www.lingq.com/en/learn/fr/web/community/forum/lingq-developer-forum/python-uploading-audio-via-api) - LingQ Developer Forum
+- [beeman](https://www.lingq.com/en/learn/fr/web/community/forum/lingq-developer-forum/python-example-for-creating-a-lesson-for-a-course) - LingQ Developer Forum
+- [@gbouthenot](https://github.com/gbouthenot) - For making [mp3splitter-js](https://github.com/gbouthenot/mp3splitter-js)
+
+## References
+
+- [LingQ API Documentation](https://www.lingq.com/apidocs/)
+- [Django REST Framework File Upload](https://goodcode.io/articles/django-rest-framework-file-upload/)
+

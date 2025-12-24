@@ -52,11 +52,29 @@ golangci-lint run ./...
 
 **Run book uploader:**
 ```bash
-python3 upload_book.py -a <audio_folder> -b <book_path> -t "Book Title"
+# Simple usage (requires directory with metadata.json)
+python3 upload_book.py <directory>
 
-# Using folder with metadata.json
-python3 upload_book.py -f <folder_with_metadata>
+# With verbose logging
+python3 upload_book.py <directory> -v
+
+# Override metadata from command line
+python3 upload_book.py <directory> --title "Custom Title" --level "Advanced 1" -v
+
+# Alternative syntax using named parameter
+python3 upload_book.py -d <directory> -v
+
+# Examples
+python3 upload_book.py downloads/plastic-louise-spilsbury
+python3 upload_book.py the-adventure-of-the-blue-carbuncle-conan-doyle -v
+python3 upload_book.py downloads/my-book --title "My Book" --tags "fiction,classic" -v
 ```
+
+**Directory structure requirements:**
+- Must contain `metadata.json` (with title, level, tags, description)
+- Must contain `*.epub` file
+- Must contain multiple `*.mp3` chapter files (in root or `<dirname>_splitted/` subdirectory)
+- Optional: `cover.jpg` or `cover.png` (will extract from EPUB if missing)
 
 **Run podcast uploader:**
 ```bash
