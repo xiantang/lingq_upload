@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import json
+import logging
 import os
 from glob import glob
 from os.path import basename
@@ -15,6 +16,14 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 from generate_timestamp import generate_timestamp_for_course
 from update_lesson import update_metadata
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 key = os.getenv("APIKey")
 postAddress = os.getenv("postAddress")
@@ -25,6 +34,7 @@ parser.add_argument("-a", "--audio_folder")
 parser.add_argument("-b", "--book_path")
 parser.add_argument("-t", "--title")
 parser.add_argument("-f", "--folder")
+parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debug logging")
 args = parser.parse_args()
 level_mapping = {
     "Beginner 1": 1,
@@ -77,14 +87,14 @@ def extract_cover_from_epub(book_obj, output_dir):
                 with open(cover_path, 'wb') as f:
                     f.write(item.content)
                 
-                print(f"Extracted cover from EPUB: {item.get_name()}")
+                logger.info(f"Extracted cover from EPUB: {item.get_name()}")
                 return cover_path
         
         # No cover found
         return None
         
     except Exception as e:
-        print(f"Warning: Failed to extract cover from EPUB: {e}")
+        logger.warning(f"Failed to extract cover from EPUB: {e}")
         return None
 
 
@@ -112,7 +122,7 @@ def create_collections(title, description, tags, level, sourceURL):
 
 
 def upload_cover(cover_path, collectonID):
-    print("uploading cover ...")
+    logger.info("Uploading cover image to collection")
     m = MultipartEncoder(
         [
             ("image", (cover_path, open(cover_path, "rb"), "image/jpg")),
@@ -137,15 +147,14 @@ def upload_aduios(collectionID):
     # If no split chapters found, use all content documents (single-file EPUBs)
     # Exclude titlepage to avoid uploading non-content pages
     if len(list_book_charpter) == 0:
-        print("No split chapters found, treating as single-file EPUB")
+        logger.info("No split chapters found, treating as single-file EPUB")
         for c in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             name_lower = c.get_name().lower()
             # Exclude titlepage, but include index/content files
             if "title" not in name_lower or "index" in name_lower:
                 list_book_charpter.append(c)
 
-    print("len of mp3 " + str(len(listofmp3s)))
-    print("len of chapter " + str(len(list_book_charpter)))
+    logger.debug(f"Found {len(listofmp3s)} MP3 files and {len(list_book_charpter)} chapters")
     
     # Validate that we have chapters
     if len(list_book_charpter) == 0:
@@ -158,11 +167,13 @@ def upload_aduios(collectionID):
             f"Please ensure you have the same number of text chapters and audio files."
         )
 
-    for doc, audiofile in list(zip(list_book_charpter, listofmp3s)):
+    logger.info(f"Starting upload of {len(listofmp3s)} lessons")
+    
+    for idx, (doc, audiofile) in enumerate(list(zip(list_book_charpter, listofmp3s)), 1):
         s = chapter_to_str(doc)
         mp3name = basename(audiofile)
         title = mp3name.split(".")[0]
-        print("creating lesson " + title + " ...")
+        logger.info(f"Creating lesson {idx}/{len(listofmp3s)}: {title}")
         body = {
             "title": title,
             "status": status,
@@ -174,14 +185,16 @@ def upload_aduios(collectionID):
         lesson_endpoint = postAddress.replace("/v2/", "/v3/")
         r = requests.post(lesson_endpoint, json=body, headers=h)
         response_data = r.json()
-        print(response_data)
         
         # Handle API response - check if it's a dict with 'id' key
         if isinstance(response_data, dict) and "id" in response_data:
             lesson_id = response_data["id"]
+            logger.debug(f"Lesson created successfully (ID: {lesson_id})")
         else:
+            logger.error(f"Failed to create lesson - API response: {response_data}")
             raise Exception(f"Failed to create lesson. API response: {response_data}")
-        print("uploading audiofile...")
+        
+        logger.info(f"Uploading audio file: {basename(audiofile)}")
         body = [
             ("language", "en"),
             ("audio", (audiofile, open(audiofile, "rb"), "audio/mpeg")),
@@ -199,6 +212,10 @@ def upload_aduios(collectionID):
 
 
 if __name__ == "__main__":
+    # Set log level based on verbose flag
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+    
     if not (args.audio_folder or args.book_path or args.title or args.folder):
         parser.error(
             "No action requested, add --audio_folder or --book_path or --title"
@@ -239,20 +256,20 @@ if __name__ == "__main__":
         
         # If no cover found in folder, try extracting from EPUB
         if len(cover) == 0:
-            print("No cover image found in folder, extracting from EPUB...")
+            logger.info("No cover image found in folder, attempting EPUB extraction")
             extracted_cover = extract_cover_from_epub(book, args.audio_folder)
             if extracted_cover:
                 cover = [extracted_cover]
-                print(f"Successfully extracted cover: {extracted_cover}")
+                logger.info(f"Successfully extracted cover: {basename(extracted_cover)}")
             else:
-                print("No cover image found in EPUB, skipping cover upload")
+                logger.warning("No cover image found in EPUB, skipping cover upload")
         
         tags = []
         
         # Check if metadata.json exists in the audio folder
         metadata_path = os.path.join(args.audio_folder, "metadata.json")
         if os.path.exists(metadata_path):
-            print(f"Found metadata.json, loading metadata...")
+            logger.info("Found metadata.json, loading book metadata")
             with open(metadata_path, "r") as file:
                 data = json.loads(file.read())
                 # Use metadata values, but allow command-line title to override
@@ -273,15 +290,23 @@ if __name__ == "__main__":
                         t.append(clean_tag)
                         count += 1
                 tags = t
-                print(f"Loaded metadata: level={level}, tags count={len(tags)}")
+                logger.debug(f"Loaded metadata - Level: {level}, Tags: {len(tags)}")
 
+    logger.info(f"Creating collection: {title}")
     collectionID = create_collections(
         title, discriprtion, tags, level, "https://english-e-reader.net"
     )
+    logger.info(f"Collection created (ID: {collectionID})")
     if len(cover) > 0:
         upload_cover(cover[0], collectionID)
 
     upload_aduios(collectionID)
+    logger.info("All lessons uploaded successfully")
 
+    logger.info("Updating collection metadata")
     update_metadata(collectionID, tags, level_mapping.get(level, 1))
+    
+    logger.info("Generating timestamps for lessons")
     generate_timestamp_for_course(collectionID)
+    
+    logger.info("Book upload completed successfully")

@@ -1,9 +1,12 @@
+import logging
 import os
 
 import requests
 from dotenv import load_dotenv
 
 from generate_timestamp import get_lessons
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 key = os.getenv("APIKey")
@@ -13,6 +16,7 @@ header = {"Authorization": key, "Content-Type": "application/json"}
 
 
 def update_metadata(collectonID, tags, level):
+    logger.debug(f"Updating metadata for collection {collectonID} - Level: {level}, Tags: {tags}")
     lessons = get_lessons(collectonID)
     lesson_ids = []
     for result in lessons["results"]:
@@ -32,7 +36,10 @@ def update_metadata(collectonID, tags, level):
         headers=header,
         json=body,
     )
-    print(r.status_code)
+    if r.status_code == 200:
+        logger.info(f"Updated tags and shelves for {len(lesson_ids)} lessons")
+    else:
+        logger.error(f"Failed to update tags/shelves - Status: {r.status_code}")
 
     level_body = {
         "ids": lesson_ids,
@@ -44,7 +51,10 @@ def update_metadata(collectonID, tags, level):
         headers=header,
         json=level_body,
     )
-    print(r.status_code)
+    if r.status_code == 200:
+        logger.info(f"Updated level to {level} for {len(lesson_ids)} lessons")
+    else:
+        logger.error(f"Failed to update level - Status: {r.status_code}")
     shared_body = {
         "ids": lesson_ids,
         "status": "shared",
@@ -55,4 +65,7 @@ def update_metadata(collectonID, tags, level):
         headers=header,
         json=shared_body,
     )
-    print(r.status_code)
+    if r.status_code == 200:
+        logger.info(f"Set status to 'shared' for {len(lesson_ids)} lessons")
+    else:
+        logger.error(f"Failed to update status - Status: {r.status_code}")
