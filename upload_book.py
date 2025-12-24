@@ -126,15 +126,17 @@ def discover_book_files(directory):
     logger.debug(f"Found EPUB: {os.path.basename(result['epub'])}")
     
     # 3. Find MP3 files (REQUIRED)
-    # Priority 1: Root directory
-    mp3_files = sorted(glob(os.path.join(directory, "*.mp3")))
-    
-    # Priority 2: <dirname>_splitted subdirectory
-    if not mp3_files:
-        splitted_dir = os.path.join(directory, f"{dirname}_splitted")
-        if os.path.isdir(splitted_dir):
-            mp3_files = sorted(glob(os.path.join(splitted_dir, "*.mp3")))
+    # Priority 1: <dirname>_splitted subdirectory (from Go downloader auto-split)
+    splitted_dir = os.path.join(directory, f"{dirname}_splitted")
+    mp3_files = []
+    if os.path.isdir(splitted_dir):
+        mp3_files = sorted(glob(os.path.join(splitted_dir, "*.mp3")))
+        if mp3_files:
             logger.info(f"Found MP3s in _splitted subdirectory: {len(mp3_files)} files")
+    
+    # Priority 2: Root directory (for manually prepared books or old format)
+    if not mp3_files:
+        mp3_files = sorted(glob(os.path.join(directory, "*.mp3")))
     
     if not mp3_files:
         raise FileNotFoundError(
@@ -142,26 +144,26 @@ def discover_book_files(directory):
             f"If you have a single MP3 + CUE file, please split it first."
         )
     
-    # Filter out very large files (likely unsplit audio)
-    filtered_mp3s = []
-    for mp3 in mp3_files:
-        size_mb = os.path.getsize(mp3) / (1024 * 1024)
-        if size_mb > 100:  # Assume files >100MB are unsplit
+    # Defensive check: Warn if CUE + large MP3 detected (catches manual downloads)
+    # Note: The Go downloader should handle this automatically, but this catches edge cases
+    cue_files = glob(os.path.join(directory, "*.cue"))
+    if cue_files and len(mp3_files) == 1:
+        size_mb = os.path.getsize(mp3_files[0]) / (1024 * 1024)
+        if size_mb > 60:  # Threshold for unsplit audiobook (lowered from 70MB)
+            mp3_name = os.path.basename(mp3_files[0])
+            cue_name = os.path.basename(cue_files[0])
             logger.warning(
-                f"Skipping large MP3 file (likely unsplit): {os.path.basename(mp3)} ({size_mb:.1f}MB). "
-                f"Please split this file into chapters first."
+                f"WARNING: Detected CUE file '{cue_name}' with large MP3 '{mp3_name}' ({size_mb:.1f}MB). "
+                f"This appears to be an unsplit audiobook. "
+                f"Please split it using: m4b-tool split --audio-format mp3 --audio-bitrate 96k "
+                f"--audio-channels 1 --audio-samplerate 22050 '{mp3_files[0]}' --use-filenames-chapters-file"
             )
-        else:
-            filtered_mp3s.append(mp3)
+            raise FileNotFoundError(
+                f"Unsplit audiobook detected. Please split '{mp3_name}' using the command above."
+            )
     
-    if not filtered_mp3s:
-        raise FileNotFoundError(
-            f"No valid MP3 chapter files found. Found only large unsplit files. "
-            f"Please split your audio into chapters."
-        )
-    
-    result['mp3s'] = filtered_mp3s
-    logger.debug(f"Found {len(filtered_mp3s)} MP3 chapter files")
+    result['mp3s'] = mp3_files
+    logger.debug(f"Found {len(mp3_files)} MP3 chapter files")
     
     # 4. Find cover image (OPTIONAL)
     # Priority 1: Root directory
@@ -355,13 +357,15 @@ def upload_lessons(collectionID, book, listofmp3s, cover):
             list_book_charpter.append(c)
 
     # If no split chapters found, use all content documents (single-file EPUBs)
-    # Exclude titlepage to avoid uploading non-content pages
+    # Exclude common non-content pages
     if len(list_book_charpter) == 0:
         logger.info("No split chapters found, treating as single-file EPUB")
+        excluded_keywords = ["title", "copyright", "toc", "contents"]
         for c in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             name_lower = c.get_name().lower()
-            # Exclude titlepage, but include index/content files
-            if "title" not in name_lower or "index" in name_lower:
+            # Exclude pages with common metadata keywords, but keep actual content
+            # Note: "index" is often actual content, not excluded
+            if not any(keyword in name_lower for keyword in excluded_keywords):
                 list_book_charpter.append(c)
 
     logger.debug(f"Found {len(listofmp3s)} MP3 files and {len(list_book_charpter)} chapters")

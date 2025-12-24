@@ -39,10 +39,16 @@ This creates a directory with:
 downloads/plastic-louise-spilsbury/
 ├── metadata.json          # Book info (title, level, tags, description)
 ├── plastic-louise-spilsbury.epub
-├── plastic-louise-spilsbury.mp3  # May need splitting
-├── plastic-louise-spilsbury.cue
+├── plastic-louise-spilsbury.mp3     # Unsplit audiobook
+├── plastic-louise-spilsbury.cue     # Chapter markers
+├── plastic-louise-spilsbury_splitted/  # Auto-split by Go downloader (if m4b-tool installed)
+│   ├── Chapter_01.mp3
+│   ├── Chapter_02.mp3
+│   └── ...
 └── cover.jpg
 ```
+
+**Note:** If `m4b-tool` is installed, the Go downloader automatically detects and splits unsplit audiobooks (single MP3 > 70MB + CUE file) into individual chapter files.
 
 ### 3. Upload to LingQ (Python)
 
@@ -97,13 +103,29 @@ Both formats are automatically detected.
 
 ## Requirements
 
+**System:**
+- Go 1.21+ (for downloader)
+- Python 3.9+ (for uploader)
+- `m4b-tool` (for automatic audio splitting - optional but recommended)
+
+**Installing m4b-tool:**
+```bash
+# macOS (Homebrew)
+brew install m4b-tool
+
+# NixOS/Nix
+nix-env -iA nixpkgs.m4b-tool
+
+# Or see: https://github.com/sandreas/m4b-tool
+```
+
 **Directory must contain:**
 - ✅ `metadata.json` (required) - Book metadata
 - ✅ `*.epub` file (required) - Book text
 - ✅ Multiple `*.mp3` files (required) - Chapter audio (one per chapter)
 - ✅ `cover.jpg` or `cover.png` (optional) - Will extract from EPUB if missing
 
-**Note:** If you have a single large MP3 file + CUE, you need to split it into chapters first.
+**Note:** The Go downloader automatically splits unsplit audiobooks (single MP3 + CUE) if `m4b-tool` is installed.
 
 ## Command Reference
 
@@ -171,20 +193,29 @@ go run ./cmd/download_book -book https://english-e-reader.net/book/the-goldbug-e
 
 **"No MP3 files found"**
 - Check that you have multiple MP3 files (one per chapter)
-- If you have a single large MP3 + CUE file, split it first using a tool like `mp3splt`
+- If you downloaded manually and have a single large MP3 + CUE file:
+  - Re-download using the Go downloader (it auto-splits if `m4b-tool` is installed)
+  - Or split manually: `m4b-tool split --audio-format mp3 --audio-bitrate 96k --audio-channels 1 --audio-samplerate 22050 audiobook.mp3`
 
 **"Chapter count must match MP3 count"**
 - The EPUB must have the same number of chapters as MP3 files
 - Check your EPUB structure and MP3 file count
 
-**"Skipping large MP3 file"**
-- Files over 100MB are assumed to be unsplit
-- Use `mp3splt` or similar to split based on CUE file
+**"WARNING: Detected CUE file with large MP3"**
+- The Python uploader detected an unsplit audiobook
+- Re-download using the Go downloader with `m4b-tool` installed
+- Or use the manual `m4b-tool split` command shown in the error message
+
+**"m4b-tool split failed"** (Go downloader)
+- Ensure `m4b-tool` is installed and in your PATH
+- Check installation: `m4b-tool --version`
+- See installation instructions in Requirements section
 
 ## Go Downloader Details
 
 - **Build/run:** `go run ./cmd/download_book -book <slug> -out ./downloads`
 - **Flags:** `-book` (or `-b`) accepts a slug, `/book/<slug>`, or full english-e-reader URL; `-out` sets the destination root; `-skip-unzip` skips extracting the mp3 zip
+- **Audio splitting:** Automatically detects and splits unsplit audiobooks (single MP3 > 70MB + CUE file) using `m4b-tool` if installed
 - **Extensibility:** Downloaders are provider-based (see `internal/downloader`). Add a new provider implementing the `Provider` interface and register it in `cmd/download_book/main.go` to support more sites
 
 ## Credits

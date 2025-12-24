@@ -37,9 +37,14 @@ go run ./cmd/download_book -book <slug> -out ./downloads -skip-unzip
 
 **Test:**
 ```bash
-# No tests currently exist
-# To run a single test (when tests are added):
+# Run all tests
+go test ./internal/downloader -v
+
+# Run specific test
 go test ./internal/downloader -run TestProviderMatch -v
+
+# Run with coverage
+go test ./internal/downloader -cover
 ```
 
 **Lint:**
@@ -253,6 +258,43 @@ Upload scripts follow this pattern:
 - **Strict matching**: Chapter count must equal MP3 count - script will error if mismatched
 - **API version**: Uses LingQ API v3 for lesson creation (v2 is deprecated)
 
+### Audio Processing Pipeline
+
+The Go downloader automatically detects and splits unsplit audiobooks during download.
+
+**How it works:**
+1. **Detection**: After downloading files, `AudioProcessor` scans the output directory
+2. **Conditions**: Splitting triggered when:
+   - Exactly one `.cue` file exists
+   - Exactly one `.mp3` file exists
+   - MP3 file size > 70MB (indicates unsplit audiobook)
+3. **Splitting**: Calls `m4b-tool split` with optimized settings for LingQ:
+   - Format: MP3 (compatible with LingQ API)
+   - Bitrate: 96kbps (balance of quality and file size)
+   - Channels: 1 (mono, sufficient for spoken audio)
+   - Sample rate: 22050 Hz (reduces file size)
+4. **Output**: Split chapters saved to `<book>_splitted/` subdirectory
+
+**Key files:**
+- `internal/downloader/processor.go` - Audio processing logic
+- `internal/downloader/processor_test.go` - Comprehensive test suite
+- `internal/downloader/englishereader.go:119-132` - Integration point
+
+**Error handling:**
+- **Strict mode**: Download fails if m4b-tool not found or splitting fails
+- **Helpful errors**: Provides installation instructions and manual commands
+- **Logging**: Clear progress messages during splitting
+
+**Python uploader validation:**
+- Simplified MP3 file validation (assumes Go handled splitting)
+- **Defensive check**: Warns if CUE + large MP3 detected (catches manual downloads)
+- Provides manual m4b-tool command if splitting needed
+
+**Requirements:**
+- `m4b-tool` must be installed and in PATH
+- Install: `brew install m4b-tool` (macOS) or via Nix (NixOS)
+- Version: Tested with m4b-tool v0.5.2+
+
 ## Common Pitfalls
 
 1. **Missing .env file**: Scripts require `.env` with API credentials
@@ -264,19 +306,21 @@ Upload scripts follow this pattern:
 
 ## Testing Guidelines
 
-**No tests currently exist.** When adding tests:
-
 **Go:**
+- Tests exist for downloader components (52.8% coverage)
 - Place tests in same package: `<file>_test.go`
 - Use table-driven tests for multiple cases
 - Mock HTTP calls using `httptest` package
 - Test provider matching logic separately
+- Example: `TestProcess_MultipleMp3Files` tests audio processing
 
 **Python:**
-- Use `pytest` as test framework
-- Place tests in `tests/` directory
-- Mock API calls with `responses` or `unittest.mock`
-- Test metadata parsing and file operations
+- No tests currently exist
+- When adding tests:
+  - Use `pytest` as test framework
+  - Place tests in `tests/` directory
+  - Mock API calls with `responses` or `unittest.mock`
+  - Test metadata parsing and file operations
 
 ## Making Changes
 

@@ -118,6 +118,19 @@ func (p *EnglishEReaderProvider) Download(ctx context.Context, input string, out
 		}
 	}
 
+	// Process audio: split if CUE + single MP3 detected
+	processor := NewAudioProcessor()
+	processResult, err := processor.Process(ctx, outputDir)
+	if err != nil {
+		return nil, fmt.Errorf("audio processing failed: %w", err)
+	}
+
+	// Add split directory to files list if processed
+	if processResult.Processed && processResult.SplitFilesDir != "" {
+		files = append(files, processResult.SplitFilesDir)
+		log.Printf("Audio split successfully into: %s", processResult.SplitFilesDir)
+	}
+
 	return &Result{
 		Provider:     p.Name(),
 		OutputDir:    outputDir,
